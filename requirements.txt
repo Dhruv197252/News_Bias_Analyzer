@@ -1,0 +1,15 @@
+streamlit
+pandas
+numpy
+scikit-learn
+joblib
+nltk
+spacy
+textblob
+beautifulsoup4
+requests
+datasets
+
+# After installing, also run:
+# python -m spacy download en_core_web_sm
+# python -m textblob.download_corpora

@@ -1,5 +1,8 @@
 import pandas as pd
-from datasets import load_dataset
+try:
+    from datasets import load_dataset
+except ImportError:
+    load_dataset = None
 
 
 # ── 1. Load from Hugging Face ─────────────────────────────────────────────────
@@ -14,6 +17,11 @@ def load_babe_dataset() -> pd.DataFrame:
         text  : str   — the news sentence
         label : int   — 1 (Biased) or 0 (Neutral)
     """
+    if load_dataset is None:
+        raise ImportError(
+            "The 'datasets' library is required to download BABE. "
+            "Install it with: pip install datasets"
+        )
     print("📥 Downloading BABE dataset from Hugging Face...")
     dataset = load_dataset("mediabiasgroup/BABE", trust_remote_code=True)
     print("✅ Download complete.\n")

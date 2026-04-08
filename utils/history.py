@@ -35,6 +35,7 @@ Public API
 import csv
 import json
 import os
+import re
 from datetime import datetime
 
 import pandas as pd
@@ -108,7 +109,6 @@ def save_analysis(
     passive_score = overall.get("passive", {}).get("score", 0.0)
     ner_data      = overall.get("ner", {})
     qo            = overall.get("quote_opinion", {})
-    ling          = overall.get("linguistic", {})
 
     # Top loaded words — up to 6 unique words, comma-separated
     loaded_words = overall.get("loaded_words", [])
@@ -303,7 +303,6 @@ def _infer_source(url: str) -> str:
     return domain or "Unknown"
 
 
-import re   # needed by _infer_source — moved to top in production
 
 
 # ── 7. Quick Demo ─────────────────────────────────────────────────────────────

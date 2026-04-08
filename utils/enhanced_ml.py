@@ -197,8 +197,6 @@ class LinguisticFeatureExtractor(BaseEstimator, TransformerMixin):
 
 
 # ── 2. Build Enhanced Pipeline ────────────────────────────────────────────────
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline as P
 
 def build_enhanced_pipeline() -> Pipeline:
     """
@@ -275,8 +273,7 @@ def train_enhanced(save: bool = True) -> Pipeline:
 
     # ── Compare with baseline ─────────────────────────────────────────────────
     print("── Baseline vs Enhanced Comparison ─────────────────")
-    from sklearn.pipeline import Pipeline as P
-    baseline = P([
+    baseline = Pipeline([
         ("tfidf", TfidfVectorizer(
             max_features=20_000, ngram_range=(1,2),
             sublinear_tf=True, min_df=2

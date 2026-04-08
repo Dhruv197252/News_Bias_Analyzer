@@ -12,8 +12,9 @@ from sklearn.metrics          import (classification_report,
 
 # ── 1. Config ─────────────────────────────────────────────────────────────────
 
-DATA_PATH  = "data/babe_clean.csv"
-MODEL_PATH = "models/bias_classifier.pkl"
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_PATH     = os.path.join(_PROJECT_ROOT, "data", "babe_clean.csv")
+MODEL_PATH    = os.path.join(_PROJECT_ROOT, "models", "bias_classifier.pkl")
 
 
 # ── 2. Load Data ──────────────────────────────────────────────────────────────
@@ -107,7 +108,7 @@ def train(save: bool = True) -> Pipeline:
 
     # Save
     if save:
-        os.makedirs("models", exist_ok=True)
+        os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
         joblib.dump(pipeline, MODEL_PATH)
         print(f"💾 Model saved to '{MODEL_PATH}'")
 

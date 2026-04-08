@@ -182,6 +182,12 @@ def analyze_article(
         overall["ner"]     = {}
         overall["passive"] = {}
 
+    # ── Quote vs Opinion ─────────────────────────────────────────────────────
+    overall["quote_opinion"] = analyze_quote_opinion(body_text)
+
+    # ── Linguistic Features ──────────────────────────────────────────────────
+    overall["linguistic"] = extract_linguistic_features(body_text)
+
     # ── Chronological thirds ──────────────────────────────────────────────────
     thirds    = _split_into_thirds(body_paras)
     beginning = analyze_chunk(thirds[0], pipeline, sia, label="Beginning")
@@ -247,7 +253,131 @@ def _empty_result(label: str) -> dict:
     }
 
 
-# ── 6. Engine Loader ──────────────────────────────────────────────────────────
+# ── 6. Quote vs Opinion Analysis ─────────────────────────────────────────────
+
+def analyze_quote_opinion(text: str) -> dict:
+    """
+    Classifies each sentence as Quoted, Attributed, or Opinion
+    to measure how much of the text is the journalist's own voice
+    versus sourced / attributed reporting.
+
+    Categories
+    ----------
+    Quoted     : contains direct quotation marks
+    Attributed : uses attribution verbs (said, told, claimed…)
+    Opinion    : journalist's own unattributed voice
+    """
+    if not text or not text.strip():
+        return _empty_quote_opinion()
+
+    sentences = re.split(r'(?<=[.!?])\s+', text)
+    sentences = [s.strip() for s in sentences if s.strip()]
+    total = len(sentences)
+
+    if total == 0:
+        return _empty_quote_opinion()
+
+    ATTRIBUTION_VERBS = {
+        "said", "says", "told", "stated", "claimed", "argued",
+        "noted", "explained", "added", "warned", "insisted",
+        "suggested", "announced", "declared", "reported",
+        "acknowledged", "confirmed", "denied", "testified",
+        "remarked", "contended", "asserted", "maintained",
+    }
+    ATTRIBUTION_PHRASES = [
+        "according to", "in a statement", "in an interview",
+        "told reporters", "in a press conference", "speaking to",
+    ]
+
+    quoted     = []
+    attributed = []
+    opinion    = []
+
+    for sent in sentences:
+        sent_lower = sent.lower()
+
+        # Check for direct quotes (quotation marks)
+        has_quotes = bool(re.search(r'["\u201c\u201d]', sent))
+
+        # Check for attribution verbs / phrases
+        words = set(sent_lower.split())
+        has_attribution = (
+            bool(words & ATTRIBUTION_VERBS) or
+            any(phrase in sent_lower for phrase in ATTRIBUTION_PHRASES)
+        )
+
+        if has_quotes:
+            quoted.append(sent)
+        elif has_attribution:
+            attributed.append(sent)
+        else:
+            opinion.append(sent)
+
+    opinion_ratio     = len(opinion)    / total
+    quote_ratio       = len(quoted)     / total
+    attribution_ratio = len(attributed) / total
+
+    if opinion_ratio < 0.30:
+        opinion_label = "Heavily Attributed"
+    elif opinion_ratio < 0.50:
+        opinion_label = "Balanced Attribution"
+    elif opinion_ratio < 0.70:
+        opinion_label = "Mostly Editorial"
+    else:
+        opinion_label = "Pure Opinion"
+
+    return {
+        "total_sentences":      total,
+        "quoted_sentences":     len(quoted),
+        "attributed_sentences": len(attributed),
+        "opinion_sentences":    len(opinion),
+        "opinion_ratio":        round(opinion_ratio, 4),
+        "quote_ratio":          round(quote_ratio, 4),
+        "attribution_ratio":    round(attribution_ratio, 4),
+        "opinion_label":        opinion_label,
+        "examples": {
+            "quoted":     [s[:200] for s in quoted[:3]],
+            "attributed": [s[:200] for s in attributed[:3]],
+            "opinion":    [s[:200] for s in opinion[:3]],
+        },
+    }
+
+
+def _empty_quote_opinion() -> dict:
+    """Returns a zeroed-out quote_opinion result dict."""
+    return {
+        "total_sentences":      0,
+        "quoted_sentences":     0,
+        "attributed_sentences": 0,
+        "opinion_sentences":    0,
+        "opinion_ratio":        0.0,
+        "quote_ratio":          0.0,
+        "attribution_ratio":    0.0,
+        "opinion_label":        "N/A",
+        "examples":             {"quoted": [], "attributed": [], "opinion": []},
+    }
+
+
+# ── 7. Linguistic Feature Extraction ─────────────────────────────────────────
+
+def extract_linguistic_features(text: str) -> dict:
+    """
+    Extract the 8+ linguistic features used by the dashboard display.
+    Uses LinguisticFeatureExtractor from enhanced_ml.py.
+
+    Returns
+    -------
+    dict : feature_name → float value (rounded to 4 d.p.)
+    """
+    if not text or not text.strip():
+        return {}
+    extractor  = LinguisticFeatureExtractor()
+    features   = extractor._extract(text)
+    feat_names = extractor.get_feature_names_out()
+    return dict(zip(feat_names, [round(f, 4) for f in features]))
+
+
+# ── 8. Engine Loader ──────────────────────────────────────────────────────────
 
 def load_engines() -> tuple:
     """Load all engines once at startup."""

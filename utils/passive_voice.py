@@ -230,7 +230,7 @@ def _empty_passive_result() -> dict:
 # ── 5. Quick Demo ─────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    nlp = spacy.load("en_core_web_trf")
+    nlp = spacy.load("en_core_web_sm")
 
     TEST_CASES = {
         "High Passive / Responsibility Hidden": (

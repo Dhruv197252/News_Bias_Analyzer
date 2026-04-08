@@ -2,18 +2,22 @@
 Step 6: Composite Scoring Algorithm
 --------------------------------------
 The master orchestrator. Takes a block of text and runs it through
-ALL four engines, then combines results into one final score.
+ALL six engines, then combines results into one final score.
 
 Weighting:
-  ML Model Probability   → 60%  (trained on real journalism patterns)
-  VADER Emotional Intensity → 20%  (raw emotional charge)
-  TextBlob Subjectivity  → 20%  (opinion vs fact language)
+  ML Model Probability      → 60%  (trained on real journalism patterns)
+  VADER Emotional Intensity → 10%  (raw emotional charge)
+  TextBlob Subjectivity     → 10%  (opinion vs fact language)
+  Passive Voice Score       → 10%  (agency-obscuring grammar)
+  Lexicon Score             →  5%  (loaded/manipulative vocabulary)
+  Hedge Score               →  5%  (epistemic hedges + certainty inflation)
 
 Why these weights?
   The ML model has the most signal — it learned from 3000+ expert-labelled
   real news sentences. The auxiliary engines catch what ML misses
-  (emotional framing, opinionated language) but are noisier signals,
-  so they get smaller weights.
+  (emotional framing, opinionated language, passive constructions,
+  loaded vocabulary, hedging language) but are noisier signals, so they
+  get smaller weights.
 """
 
 import re
@@ -25,15 +29,19 @@ from utils.bias_lexicon  import scan_text
 from utils.ml_engine     import load_model, predict_bias
 from utils.nlp_engines   import run_auxiliary_engines, ensure_vader_ready
 from utils.ner_engine    import load_nlp, extract_entities
-from utils.passive_voice import analyze_passive_voice
-from utils.enhanced_ml   import LinguisticFeatureExtractor
+from utils.passive_voice   import analyze_passive_voice
+from utils.enhanced_ml     import LinguisticFeatureExtractor
+from utils.hedge_detector  import analyze_hedging
 
 # ── 1. Weights ────────────────────────────────────────────────────────────────
 
 WEIGHTS = {
     "ml":          0.60,
-    "emotion":     0.20,
-    "subjectivity":0.20,
+    "emotion":     0.10,
+    "subjectivity":0.10,
+    "passive":     0.10,
+    "lexicon":     0.05,
+    "hedge":       0.05,
 }
 
 # ── 2. Label Thresholds ───────────────────────────────────────────────────────
@@ -41,6 +49,7 @@ WEIGHTS = {
 def composite_label(score: float) -> dict:
     """
     Maps a 0.0–1.0 composite score to a plain-English verdict.
+    Thresholds match the UI Interpretation Guide exactly.
 
     Returns
     -------
@@ -49,13 +58,13 @@ def composite_label(score: float) -> dict:
         color : str   — for Streamlit UI colouring (Step 7)
         emoji : str   — visual indicator
     """
-    if score < 0.20:
+    if score < 0.30:
         return {"label": "Appears Neutral",        "color": "green",  "emoji": "🟢"}
-    elif score < 0.40:
+    elif score < 0.47:
         return {"label": "Slightly Opinionated",   "color": "blue",   "emoji": "🔵"}
-    elif score < 0.60:
+    elif score < 0.63:
         return {"label": "Moderate Bias",          "color": "orange", "emoji": "🟠"}
-    elif score < 0.80:
+    elif score < 0.78:
         return {"label": "Highly Opinionated",     "color": "red",    "emoji": "🔴"}
     else:
         return {"label": "Extreme Bias Detected",  "color": "red",    "emoji": "🚨"}
@@ -68,9 +77,10 @@ def analyze_chunk(
     pipeline,                        # fitted sklearn pipeline
     sia:      SentimentIntensityAnalyzer,
     label:    str = "chunk",
+    nlp=None,                        # spaCy model for passive voice
 ) -> dict:
     """
-    Master analysis function. Runs all four engines on a text block
+    Master analysis function. Runs all five engines on a text block
     and returns a single unified result dictionary.
 
     Parameters
@@ -79,6 +89,7 @@ def analyze_chunk(
     pipeline : fitted sklearn Pipeline from ml_engine.py
     sia      : VADER SentimentIntensityAnalyzer instance
     label    : str  — name for this chunk (e.g. "Headline", "Body", "Beginning")
+    nlp      : spaCy Language model (optional — needed for passive voice engine)
 
     Returns
     -------
@@ -89,6 +100,8 @@ def analyze_chunk(
 
     # ── Engine 1: Lexicon Scanner ─────────────────────────────────────────────
     lexicon_result = scan_text(text)
+    # Normalise raw lexicon score (0.0–1.0); mirrors the *10 cap used in app.py
+    lexicon_score  = min(lexicon_result["naive_score"] * 10, 1.0)
 
     # ── Engine 2: ML Model ────────────────────────────────────────────────────
     ml_result = predict_bias(text, pipeline)
@@ -99,11 +112,26 @@ def analyze_chunk(
     emotion   = aux["emotional_intensity"]["intensity"]   # 0.0 – 1.0
     subj      = aux["subjectivity"]["score"]              # 0.0 – 1.0
 
+    # ── Engine 5: Passive Voice ───────────────────────────────────────────────
+    if nlp:
+        passive_result = analyze_passive_voice(text, nlp)
+        passive_score  = passive_result.get("score", 0.0)
+    else:
+        passive_result = {}
+        passive_score  = 0.0
+
+    # ── Engine 6: Hedge Detection ────────────────────────────────────────────
+    hedge_result = analyze_hedging(text)
+    hedge_score  = hedge_result.hedge_score
+
     # ── Composite Score ───────────────────────────────────────────────────────
     composite = (
-        WEIGHTS["ml"]           * ml_prob  +
-        WEIGHTS["emotion"]      * emotion  +
-        WEIGHTS["subjectivity"] * subj
+        WEIGHTS["ml"]           * ml_prob       +
+        WEIGHTS["emotion"]      * emotion       +
+        WEIGHTS["subjectivity"] * subj          +
+        WEIGHTS["passive"]      * passive_score +
+        WEIGHTS["lexicon"]      * lexicon_score +
+        WEIGHTS["hedge"]        * hedge_score
     )
     composite = round(composite, 4)
 
@@ -132,12 +160,29 @@ def analyze_chunk(
         "subjectivity_score": round(subj, 4),
         "subjectivity_label": aux["subjectivity"]["label"],
 
+        # Passive voice engine (embedded dict for app.py compatibility)
+        "passive":         passive_result,
+        "passive_score":   round(passive_score, 4),
+
         # Lexicon engine
         "loaded_words":       lexicon_result["matched_words"],
         "loaded_word_count":  len(lexicon_result["matched_words"]),
         "unique_loaded_words":lexicon_result["unique_matches"],
         "lexicon_score":      lexicon_result["naive_score"],
         "category_counts":    dict(lexicon_result["category_counts"]),
+
+        # Hedge engine
+        "hedge_score":        round(hedge_score, 4),
+        "hedge_label":        hedge_result.hedge_label,
+        "hedge_result":       {
+            "hedge_score":        round(hedge_score, 4),
+            "hedge_label":        hedge_result.hedge_label,
+            "epistemic_count":    hedge_result.epistemic_count,
+            "inflation_count":    hedge_result.inflation_count,
+            "epistemic_rate":     round(hedge_result.epistemic_rate, 4),
+            "inflation_rate":     round(hedge_result.inflation_rate, 4),
+            "flagged_sentences":  hedge_result.flagged_sentences,
+        },
     }
 
 
@@ -164,6 +209,7 @@ def analyze_article(
     body_paras : list[str]  — body split into paragraphs
     pipeline   : sklearn Pipeline
     sia        : VADER SIA
+    nlp        : spaCy model (optional)
 
     Returns
     -------
@@ -172,15 +218,14 @@ def analyze_article(
     print("🔍 Analysing article...\n")
 
     # ── Overall body score ────────────────────────────────────────────────────
-    overall   = analyze_chunk(body_text,  pipeline, sia, label="Full Body")
-    headline_ = analyze_chunk(headline,   pipeline, sia, label="Headline")
-    
+    overall   = analyze_chunk(body_text, pipeline, sia, label="Full Body", nlp=nlp)
+    headline_ = analyze_chunk(headline,  pipeline, sia, label="Headline",  nlp=nlp)
+
     if nlp:
-        overall["ner"]     = extract_entities(body_text, nlp)
-        overall["passive"] = analyze_passive_voice(body_text, nlp)
+        overall["ner"] = extract_entities(body_text, nlp)
+        # passive already computed inside analyze_chunk when nlp is provided
     else:
         overall["ner"]     = {}
-        overall["passive"] = {}
 
     # ── Quote vs Opinion ─────────────────────────────────────────────────────
     overall["quote_opinion"] = analyze_quote_opinion(body_text)
@@ -190,9 +235,9 @@ def analyze_article(
 
     # ── Chronological thirds ──────────────────────────────────────────────────
     thirds    = _split_into_thirds(body_paras)
-    beginning = analyze_chunk(thirds[0], pipeline, sia, label="Beginning")
-    middle    = analyze_chunk(thirds[1], pipeline, sia, label="Middle")
-    end       = analyze_chunk(thirds[2], pipeline, sia, label="End")
+    beginning = analyze_chunk(thirds[0], pipeline, sia, label="Beginning", nlp=nlp)
+    middle    = analyze_chunk(thirds[1], pipeline, sia, label="Middle",    nlp=nlp)
+    end       = analyze_chunk(thirds[2], pipeline, sia, label="End",       nlp=nlp)
 
     return {
         "overall":    overall,
@@ -216,11 +261,10 @@ def _split_into_thirds(paragraphs: list[str]) -> tuple[str, str, str]:
     if n == 0:
         return ("", "", "")
     elif n < 3:
-        # Treat whole article as all three sections
         text = " ".join(paragraphs)
         return (text, text, text)
 
-    third = max(1, n // 3)
+    third     = max(1, n // 3)
     beginning = " ".join(paragraphs[:third])
     middle    = " ".join(paragraphs[third : third * 2])
     end       = " ".join(paragraphs[third * 2:])
@@ -245,11 +289,16 @@ def _empty_result(label: str) -> dict:
         "vader_compound":     0.0,
         "subjectivity_score": 0.0,
         "subjectivity_label": "N/A",
+        "passive":            {},
+        "passive_score":      0.0,
         "loaded_words":       [],
         "loaded_word_count":  0,
         "unique_loaded_words":0,
         "lexicon_score":      0.0,
         "category_counts":    {},
+        "hedge_score":        0.0,
+        "hedge_label":        "N/A",
+        "hedge_result":       {},
     }
 
 
@@ -296,11 +345,8 @@ def analyze_quote_opinion(text: str) -> dict:
     for sent in sentences:
         sent_lower = sent.lower()
 
-        # Check for direct quotes (quotation marks)
-        has_quotes = bool(re.search(r'["\u201c\u201d]', sent))
-
-        # Check for attribution verbs / phrases
-        words = set(sent_lower.split())
+        has_quotes      = bool(re.search(r'["\u201c\u201d]', sent))
+        words           = set(sent_lower.split())
         has_attribution = (
             bool(words & ATTRIBUTION_VERBS) or
             any(phrase in sent_lower for phrase in ATTRIBUTION_PHRASES)
@@ -384,37 +430,31 @@ def load_engines() -> tuple:
     ensure_vader_ready()
     pipeline = load_model()
     sia      = SentimentIntensityAnalyzer()
-    
-    # THIS IS THE MISSING LINE! We have to load the AI before we return it.
-    nlp      = load_nlp()  
-    
+    nlp      = load_nlp()
     print("✅ All engines loaded.\n")
     return pipeline, sia, nlp
 
-# ── 7. Quick Demo ─────────────────────────────────────────────────────────────
+
+# ── 9. Quick Demo ─────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     pipeline, sia, nlp = load_engines()
 
-    # Simulate a full article
     HEADLINE = "Radical Policy Threatens to Devastate Working Families"
 
     PARAGRAPHS = [
-        # Beginning — alarmist framing
         "The government's draconian new policy has triggered outrage among "
         "experts who warn of catastrophic consequences for ordinary citizens.",
 
         "Critics say the regime has recklessly ignored warnings from "
         "economists, pushing forward with what many call a shameful agenda.",
 
-        # Middle — slightly more neutral
         "The bill passed with 52 votes in the Senate after three weeks "
         "of debate. Officials say implementation will begin next quarter.",
 
         "Several amendments were proposed during the review process, "
         "though most were rejected by the committee in a close vote.",
 
-        # End — charged again
         "Protesters gathered outside parliament calling the move "
         "outrageous and unconscionable, vowing to challenge it in court.",
 
@@ -432,7 +472,7 @@ if __name__ == "__main__":
         sia        = sia,
         nlp        = nlp,
     )
-    # ── Print Report ──────────────────────────────────────────────────────────
+
     print(f"\n{'═'*65}")
     print("  COMPOSITE ANALYSIS REPORT")
     print(f"{'═'*65}")
@@ -444,6 +484,8 @@ if __name__ == "__main__":
         print(f"     ML Probability   : {data['ml_probability']:.0%}")
         print(f"     Emotion Intensity: {data['emotion_intensity']:.0%}")
         print(f"     Subjectivity     : {data['subjectivity_score']:.0%}")
+        print(f"     Passive Score    : {data['passive_score']:.0%}")
+        print(f"     Lexicon Score    : {min(data['lexicon_score']*10, 1.0):.0%}")
         if data["loaded_words"]:
             unique = list(set(w for w, _ in data["loaded_words"]))
             print(f"     Loaded Words     : {', '.join(unique[:6])}")

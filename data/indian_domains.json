@@ -1,0 +1,262 @@
+{
+  "ndtv.com": {
+    "name": "NDTV",
+    "leaning": "Left-Center",
+    "factual": "High",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 1988,
+    "type": "TV + Digital"
+  },
+  "thehindu.com": {
+    "name": "The Hindu",
+    "leaning": "Left-Center",
+    "factual": "High",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 1878,
+    "type": "Print + Digital"
+  },
+  "indianexpress.com": {
+    "name": "The Indian Express",
+    "leaning": "Left-Center",
+    "factual": "High",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 1932,
+    "type": "Print + Digital"
+  },
+  "timesofindia.com": {
+    "name": "Times of India",
+    "leaning": "Center",
+    "factual": "Mostly",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 1838,
+    "type": "Print + Digital"
+  },
+  "hindustantimes.com": {
+    "name": "Hindustan Times",
+    "leaning": "Center",
+    "factual": "Mostly",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 1924,
+    "type": "Print + Digital"
+  },
+  "republicworld.com": {
+    "name": "Republic World",
+    "leaning": "Right",
+    "factual": "Mixed",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 2017,
+    "type": "TV + Digital"
+  },
+  "republic.tv": {
+    "name": "Republic TV",
+    "leaning": "Right",
+    "factual": "Mixed",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 2017,
+    "type": "TV + Digital"
+  },
+  "thewire.in": {
+    "name": "The Wire",
+    "leaning": "Left",
+    "factual": "High",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 2015,
+    "type": "Digital"
+  },
+  "scroll.in": {
+    "name": "Scroll.in",
+    "leaning": "Left-Center",
+    "factual": "High",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 2014,
+    "type": "Digital"
+  },
+  "theprint.in": {
+    "name": "The Print",
+    "leaning": "Center",
+    "factual": "High",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 2017,
+    "type": "Digital"
+  },
+  "firstpost.com": {
+    "name": "Firstpost",
+    "leaning": "Right-Center",
+    "factual": "Mostly",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 2011,
+    "type": "Digital"
+  },
+  "news18.com": {
+    "name": "News18",
+    "leaning": "Right-Center",
+    "factual": "Mostly",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 2003,
+    "type": "TV + Digital"
+  },
+  "indiatoday.in": {
+    "name": "India Today",
+    "leaning": "Center",
+    "factual": "High",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 1975,
+    "type": "Magazine + Digital"
+  },
+  "zeenews.india.com": {
+    "name": "Zee News",
+    "leaning": "Right",
+    "factual": "Mixed",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 1992,
+    "type": "TV + Digital"
+  },
+  "outlookindia.com": {
+    "name": "Outlook India",
+    "leaning": "Left-Center",
+    "factual": "High",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 1995,
+    "type": "Magazine + Digital"
+  },
+  "deccanherald.com": {
+    "name": "Deccan Herald",
+    "leaning": "Center",
+    "factual": "High",
+    "country": "IN",
+    "language": "English",
+    "region": "South India",
+    "founded": 1948,
+    "type": "Print + Digital"
+  },
+  "livemint.com": {
+    "name": "Mint",
+    "leaning": "Right-Center",
+    "factual": "High",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 2007,
+    "type": "Print + Digital"
+  },
+  "economictimes.indiatimes.com": {
+    "name": "Economic Times",
+    "leaning": "Center",
+    "factual": "High",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 1961,
+    "type": "Print + Digital"
+  },
+  "opindia.com": {
+    "name": "OpIndia",
+    "leaning": "Extreme Right",
+    "factual": "Low",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 2014,
+    "type": "Digital"
+  },
+  "swarajyamag.com": {
+    "name": "Swarajya Magazine",
+    "leaning": "Right",
+    "factual": "Mixed",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 2014,
+    "type": "Digital"
+  },
+  "thequint.com": {
+    "name": "The Quint",
+    "leaning": "Left-Center",
+    "factual": "High",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 2015,
+    "type": "Digital"
+  },
+  "newslaundry.com": {
+    "name": "Newslaundry",
+    "leaning": "Left",
+    "factual": "High",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 2012,
+    "type": "Digital"
+  },
+  "thenewsminute.com": {
+    "name": "The News Minute",
+    "leaning": "Left-Center",
+    "factual": "High",
+    "country": "IN",
+    "language": "English",
+    "region": "South India",
+    "founded": 2014,
+    "type": "Digital"
+  },
+  "aninews.in": {
+    "name": "ANI News",
+    "leaning": "Right",
+    "factual": "Mostly",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 1967,
+    "type": "Wire Service"
+  },
+  "ptinews.com": {
+    "name": "PTI",
+    "leaning": "Center",
+    "factual": "High",
+    "country": "IN",
+    "language": "English",
+    "region": "National",
+    "founded": 1947,
+    "type": "Wire Service"
+  },
+  "wionews.com": {
+    "name": "WION",
+    "leaning": "Right-Center",
+    "factual": "Mostly",
+    "country": "IN",
+    "language": "English",
+    "region": "International",
+    "founded": 2016,
+    "type": "TV + Digital"
+  }
+}

@@ -1,15 +1,38 @@
-streamlit
-pandas
-numpy
-scikit-learn
-joblib
-nltk
-spacy
-textblob
-beautifulsoup4
-requests
-datasets
+# ── Core ──────────────────────────────────────────────────────────────────────
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.6.0
+pydantic-settings>=2.2.0
 
+# ── Database ──────────────────────────────────────────────────────────────────
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.9          # PostgreSQL driver (binary = no C compile needed)
+
+# ── NLP ───────────────────────────────────────────────────────────────────────
+scikit-learn>=1.4.0
+joblib>=1.3.2
+pandas>=2.0.0
+numpy>=1.26.0
+nltk>=3.8.1
+spacy>=3.7.0
+textblob>=0.18.0
+datasets>=2.18.0                # For AllSides data loading
+
+# ── Scraping (Multi-engine fallback chain) ────────────────────────────────────
+trafilatura>=1.9.0              # Primary extractor — handles 90%+ of news sites
+newspaper3>=0.9.3.1             # Secondary extractor
+beautifulsoup4>=4.12.0          # Tertiary fallback
+requests>=2.31.0
+lxml>=5.0.0                     # Fast HTML parser (used by trafilatura + bs4)
+
+# ── Gemini AI ─────────────────────────────────────────────────────────────────
+google-generativeai>=0.5.0
+
+# ── Optional: XGBoost (better accuracy than LR) ───────────────────────────────
+xgboost>=2.0.0
+
+# ── Dev ───────────────────────────────────────────────────────────────────────
 # After installing, also run:
-# python -m spacy download en_core_web_sm
-# python -m textblob.download_corpora
+#   python -m spacy download en_core_web_sm
+#   python -m nltk.downloader vader_lexicon
+#   python -m textblob.download_corpora

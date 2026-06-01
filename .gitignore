@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+venv/
+ENV/
+env/
+bias_env/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Models (too large for git — use git-lfs or download script)
+models/*.pkl
+models/*.joblib
+models/*.bin
+!models/.gitkeep
+
+# Data (large files)
+data/merged_corpus.csv
+data/*.pkl
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# SQLite dev DB
+*.db
+*.sqlite
+
+# Logs
+*.log
+logs/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# pytest
+.pytest_cache/

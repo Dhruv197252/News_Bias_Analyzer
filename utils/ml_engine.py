@@ -1,4 +1,23 @@
+"""
+ML Engine — Bias Classifier
+-----------------------------
+Binary classifier: Biased=1 / Neutral=0
+
+Label mapping (aligned with training data):
+  Left, Right leaning articles  → biased = 1
+  Center / Neutral articles     → biased = 0
+
+Model priority:
+  1. bias_classifier_v2.pkl  (XGBoost — trained on BABE + AllSides)
+  2. bias_classifier.pkl     (LR fallback — original BABE-only model)
+
+Render free-tier safe:
+  • Model loaded ONCE at startup as module-level singleton
+  • ~60-80 MB RAM for model + TF-IDF vocabulary
+"""
+
 import os
+import logging
 import joblib
 import pandas as pd
 from sklearn.pipeline         import Pipeline
@@ -9,118 +28,152 @@ from sklearn.metrics          import (classification_report,
                                       confusion_matrix,
                                       roc_auc_score)
 
+logger = logging.getLogger(__name__)
+
 
 # ── 1. Config ─────────────────────────────────────────────────────────────────
 
-_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_PATH     = os.path.join(_PROJECT_ROOT, "data", "babe_clean.csv")
-MODEL_PATH    = os.path.join(_PROJECT_ROOT, "models", "bias_classifier.pkl")
+_PROJECT_ROOT  = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_PATH      = os.path.join(_PROJECT_ROOT, "data", "babe_clean.csv")
+CORPUS_PATH    = os.path.join(_PROJECT_ROOT, "data", "merged_corpus.csv")
+MODEL_PATH_V2  = os.path.join(_PROJECT_ROOT, "models", "bias_classifier_v2.pkl")
+MODEL_PATH_V1  = os.path.join(_PROJECT_ROOT, "models", "bias_classifier.pkl")
+
+# Singleton — loaded once at module import time when used in FastAPI
+_PIPELINE_SINGLETON: Pipeline | None = None
 
 
-# ── 2. Load Data ──────────────────────────────────────────────────────────────
+# ── 2. Model Loader ───────────────────────────────────────────────────────────
 
-def load_data(path: str = DATA_PATH) -> tuple[list[str], list[int]]:
-    """Load the cleaned BABE CSV and return texts + labels."""
-    print(f"📂 Loading data from '{path}'...")
-    df = pd.read_csv(path)
-    print(f"   {len(df)} rows loaded.\n")
-    return df["text"].tolist(), df["label"].tolist()
+def load_model(path: str | None = None) -> Pipeline:
+    """
+    Load the saved model from disk.
+
+    Priority:
+      1. Explicit path (if given)
+      2. bias_classifier_v2.pkl  (XGBoost + AllSides)
+      3. bias_classifier.pkl     (LR fallback)
+
+    Returns the fitted sklearn Pipeline.
+    """
+    if path:
+        logger.info(f"Loading model from explicit path: {path}")
+        return joblib.load(path)
+
+    if os.path.exists(MODEL_PATH_V2):
+        logger.info(f"Loading v2 model: {MODEL_PATH_V2}")
+        return joblib.load(MODEL_PATH_V2)
+
+    if os.path.exists(MODEL_PATH_V1):
+        logger.warning(f"v2 model not found. Loading v1 fallback: {MODEL_PATH_V1}")
+        return joblib.load(MODEL_PATH_V1)
+
+    raise FileNotFoundError(
+        "No model file found. Run `python training/train_model.py` to train."
+    )
 
 
-# ── 3. Build the Sklearn Pipeline ─────────────────────────────────────────────
+def get_pipeline() -> Pipeline:
+    """
+    Return the singleton pipeline (load once, reuse).
+    Used by FastAPI to avoid loading the model on every request.
+    """
+    global _PIPELINE_SINGLETON
+    if _PIPELINE_SINGLETON is None:
+        _PIPELINE_SINGLETON = load_model()
+    return _PIPELINE_SINGLETON
+
+
+# ── 3. Build Legacy Pipeline (for retrain from scratch) ──────────────────────
 
 def build_pipeline() -> Pipeline:
     """
-    Two-stage sklearn Pipeline:
-
-    Stage 1 — TfidfVectorizer
-      • max_features=20000  : vocabulary cap (keeps memory sane)
-      • ngram_range=(1,2)   : unigrams + bigrams
-        e.g. "far left" is more informative than "far" and "left" alone
-      • sublinear_tf=True   : log-scale TF to dampen very frequent words
-      • min_df=2            : ignore terms that appear in only 1 document
-
-    Stage 2 — LogisticRegression
-      • C=1.0               : default regularisation (tune if needed)
-      • max_iter=1000       : enough iterations to converge
-      • class_weight='balanced' : compensates for the 1740/1381 imbalance
+    TF-IDF + Logistic Regression pipeline.
+    Used for quick retraining without XGBoost.
     """
     return Pipeline([
         ("tfidf", TfidfVectorizer(
-            max_features  = 20_000,
-            ngram_range   = (1, 2),
+            max_features  = 25_000,
+            ngram_range   = (1, 3),
             sublinear_tf  = True,
             min_df        = 2,
             strip_accents = "unicode",
         )),
         ("clf", LogisticRegression(
-            C             = 1.0,
-            max_iter      = 1000,
+            C             = 1.5,
+            max_iter      = 1500,
             class_weight  = "balanced",
             random_state  = 42,
         )),
     ])
 
 
-# ── 4. Train & Evaluate ───────────────────────────────────────────────────────
+# ── 4. Load Data ──────────────────────────────────────────────────────────────
+
+def load_data(path: str | None = None) -> tuple[list[str], list[int]]:
+    """
+    Load training data.
+    Prefers merged_corpus.csv (BABE + AllSides), falls back to babe_clean.csv.
+
+    Label convention:
+        1 → Biased   (Left or Right leaning)
+        0 → Neutral  (Center)
+    """
+    if path is None:
+        path = CORPUS_PATH if os.path.exists(CORPUS_PATH) else DATA_PATH
+
+    logger.info(f"Loading data from '{path}'...")
+    df = pd.read_csv(path)
+    df = df[["text", "label"]].dropna()
+    df["label"] = df["label"].astype(int)
+    logger.info(f"   {len(df)} rows loaded.")
+    return df["text"].tolist(), df["label"].tolist()
+
+
+# ── 5. Train ──────────────────────────────────────────────────────────────────
 
 def train(save: bool = True) -> Pipeline:
     """
-    Full train → evaluate → save flow.
-
-    Returns the fitted pipeline so it can be imported directly
-    by the composite scorer without loading from disk.
+    Quick train using LR (for standalone use or CI).
+    For full XGBoost training, use training/train_model.py.
     """
     texts, labels = load_data()
 
-    # 80/20 stratified split (keeps class ratio equal in both sets)
     X_train, X_test, y_train, y_test = train_test_split(
         texts, labels,
         test_size    = 0.2,
         random_state = 42,
         stratify     = labels,
     )
-    print(f"   Train size : {len(X_train)}")
-    print(f"   Test  size : {len(X_test)}\n")
+    print(f"   Train: {len(X_train)} | Test: {len(X_test)}")
 
-    # Train
-    print("🤖 Training TF-IDF + Logistic Regression pipeline...")
     pipeline = build_pipeline()
     pipeline.fit(X_train, y_train)
-    print("✅ Training complete.\n")
 
-    # Evaluate
     y_pred  = pipeline.predict(X_test)
-    y_proba = pipeline.predict_proba(X_test)[:, 1]   # P(biased)
+    y_proba = pipeline.predict_proba(X_test)[:, 1]
 
-    print("── Classification Report ────────────────────────────")
-    print(classification_report(y_test, y_pred,
-                                target_names=["Neutral", "Biased"]))
+    print("\n── Classification Report ────────────────────────────")
+    print(classification_report(y_test, y_pred, target_names=["Neutral (0)", "Biased (1)"]))
 
-    print("── Confusion Matrix ─────────────────────────────────")
     cm = confusion_matrix(y_test, y_pred)
+    print("── Confusion Matrix ─────────────────────────────────")
     print(f"   TN={cm[0,0]}  FP={cm[0,1]}")
     print(f"   FN={cm[1,0]}  TP={cm[1,1]}\n")
 
-    print(f"── ROC-AUC Score ────────────────────────────────────")
     auc = roc_auc_score(y_test, y_proba)
+    print(f"── ROC-AUC Score ────────────────────────────────────")
     print(f"   AUC = {auc:.4f}\n")
 
-    # Save
     if save:
-        os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
-        joblib.dump(pipeline, MODEL_PATH)
-        print(f"💾 Model saved to '{MODEL_PATH}'")
+        os.makedirs(os.path.dirname(MODEL_PATH_V1), exist_ok=True)
+        joblib.dump(pipeline, MODEL_PATH_V1)
+        print(f"💾 Model saved to '{MODEL_PATH_V1}'")
 
     return pipeline
 
 
-# ── 5. Inference Helpers ──────────────────────────────────────────────────────
-
-def load_model(path: str = MODEL_PATH) -> Pipeline:
-    """Load the saved model from disk."""
-    return joblib.load(path)
-
+# ── 6. Inference ──────────────────────────────────────────────────────────────
 
 def predict_bias(text: str, pipeline: Pipeline) -> dict:
     """
@@ -129,35 +182,66 @@ def predict_bias(text: str, pipeline: Pipeline) -> dict:
     Returns
     -------
     dict:
-        label       : "Biased" or "Neutral"
-        probability : float 0.0–1.0  (confidence of being Biased)
+        label       : "Biased" (1) or "Neutral" (0)
+        probability : float 0.0–1.0  (P(biased))
+        ml_label    : int 0 or 1
     """
-    proba = pipeline.predict_proba([text])[0]   # [P(neutral), P(biased)]
+    if not text or not text.strip():
+        return {"label": "Neutral", "probability": 0.0, "ml_label": 0}
+
+    proba     = pipeline.predict_proba([text])[0]   # [P(neutral), P(biased)]
     bias_prob = round(float(proba[1]), 4)
+    ml_label  = 1 if bias_prob >= 0.5 else 0
+
     return {
-        "label":       "Biased" if bias_prob >= 0.5 else "Neutral",
+        "label":       "Biased" if ml_label == 1 else "Neutral",
         "probability": bias_prob,
+        "ml_label":    ml_label,
     }
 
 
-# ── 6. Quick Demo ─────────────────────────────────────────────────────────────
+# ── 7. Batch Inference ────────────────────────────────────────────────────────
+
+def predict_bias_batch(texts: list[str], pipeline: Pipeline) -> list[dict]:
+    """
+    Batch inference for multiple texts. More efficient than calling predict_bias() in a loop.
+    """
+    if not texts:
+        return []
+
+    probas = pipeline.predict_proba(texts)[:, 1]
+    results = []
+    for prob in probas:
+        bias_prob = round(float(prob), 4)
+        ml_label  = 1 if bias_prob >= 0.5 else 0
+        results.append({
+            "label":       "Biased" if ml_label == 1 else "Neutral",
+            "probability": bias_prob,
+            "ml_label":    ml_label,
+        })
+    return results
+
+
+# ── 8. Quick Demo ─────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    # Train and save the model
     pipeline = train(save=True)
 
-    # Test on a few hand-crafted examples
     TEST_SENTENCES = [
-        "The regime recklessly imposed draconian laws that crushed civil liberties.",
+        # Neutral (label=0 expected)
         "The government announced new infrastructure spending on Tuesday.",
-        "Radical extremists have shamefully undermined our democratic institutions.",
         "Officials confirmed the bill passed with bipartisan support in the Senate.",
+        "NDTV reports that the Prime Minister will visit flood-affected areas tomorrow.",
+        # Biased (label=1 expected)
+        "Radical extremists have shamefully undermined our democratic institutions.",
         "The heroic whistleblower exposed the corrupt and tyrannical administration.",
+        "Republic TV's vile propaganda machine continues its assault on minorities.",
     ]
 
     print("\n── Live Inference Test ───────────────────────────────")
+    print(f"  {'Label':<8} {'Prob':>6}   Text")
+    print(f"  {'─'*8} {'─'*6}   {'─'*60}")
     for sentence in TEST_SENTENCES:
         result = predict_bias(sentence, pipeline)
-        bar = "🔴" if result["label"] == "Biased" else "🟢"
-        print(f"{bar} [{result['label']:<7} | {result['probability']:.0%}]  "
-              f"{sentence[:80]}...")
+        bar    = "🔴" if result["ml_label"] == 1 else "🟢"
+        print(f"  {bar} {result['label']:<7} {result['probability']:>5.0%}   {sentence[:70]}")

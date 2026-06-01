@@ -20,7 +20,7 @@ datasets>=2.18.0                # For AllSides data loading
 
 # ── Scraping (Multi-engine fallback chain) ────────────────────────────────────
 trafilatura>=1.9.0              # Primary extractor — handles 90%+ of news sites
-newspaper3>=0.9.3.1             # Secondary extractor
+newspaper3k>=0.2.8              # Secondary extractor
 beautifulsoup4>=4.12.0          # Tertiary fallback
 requests>=2.31.0
 lxml>=5.0.0                     # Fast HTML parser (used by trafilatura + bs4)

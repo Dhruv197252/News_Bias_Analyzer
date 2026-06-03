@@ -25,7 +25,7 @@ if ROOT not in sys.path:
 
 from backend.config   import get_settings
 from backend.database import init_db
-from backend.routers  import analyze, history, domains, genai
+from backend.routers  import analyze, history, domains
 
 logging.basicConfig(
     level   = logging.INFO,
@@ -86,7 +86,7 @@ async def startup_event():
 app.include_router(analyze.router)
 app.include_router(history.router)
 app.include_router(domains.router)
-app.include_router(genai.router)
+# app.include_router(genai.router)
 
 
 # ── Health ────────────────────────────────────────────────────────────────────

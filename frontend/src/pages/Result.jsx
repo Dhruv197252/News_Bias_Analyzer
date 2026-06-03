@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import BiasGauge from '../components/BiasGauge';
 import EngineCards from '../components/EngineCards';
-import GenAIPanel from '../components/GenAIPanel';
+// import GenAIPanel from '../components/GenAIPanel';
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
   ResponsiveContainer, Tooltip
@@ -225,11 +225,11 @@ export default function Result() {
       </div>
 
       {/* ── GenAI Panel ── */}
-      <GenAIPanel
+      {/* <GenAIPanel
         analysisId={data.id}
         text={data.body_preview || ''}
         headline={data.headline || ''}
-      />
+      /> */}
 
       {/* ── Article Preview ── */}
       {data.body_preview && (

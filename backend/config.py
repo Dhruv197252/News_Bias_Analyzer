@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./slant_dev.db"   # local dev default
 
     # Gemini AI
-    GEMINI_API_KEY: str = ""
+    GEMINI_API_KEY: str = "YOUR_API_KEY_HERE"
 
     # CORS — comma-separated list of allowed origins
     CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000"

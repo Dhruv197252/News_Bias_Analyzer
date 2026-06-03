@@ -35,12 +35,14 @@ import re
 from dataclasses import dataclass, field
 
 
-# ── 1. Hedge Lexicons ─────────────────────────────────────────────────────────
+#  1. Hedge Lexicons 
 
 # Epistemic hedges — writer distances from truth of claim
 # Pattern: claim is attributed to unnamed/vague sources, or flagged as
 # unverified. Legitimate in breaking news; manipulative when used to
 # spread accusations without accountability.
+
+
 EPISTEMIC_HEDGES: list[str] = [
     # Source attribution hedges
     "reportedly", "allegedly", "purportedly", "supposedly",
@@ -63,6 +65,8 @@ EPISTEMIC_HEDGES: list[str] = [
 # Certainty inflation — writer presents opinion as established fact
 # Pattern: contested claim stated without qualification, using adverbs
 # that manufacture consensus. This is the more dangerous bias pattern.
+
+
 CERTAINTY_INFLATORS: list[str] = [
     # Factuality adverbs (presenting opinion as fact)
     "clearly", "obviously", "undeniably", "undoubtedly",
@@ -85,7 +89,7 @@ CERTAINTY_INFLATORS: list[str] = [
 ]
 
 
-# ── 2. Data Classes ───────────────────────────────────────────────────────────
+#  2. Data Classes 
 
 @dataclass
 class HedgeMatch:
@@ -110,7 +114,7 @@ class HedgeResult:
     flagged_sentences:  list[dict]          # sentences with both types for UI
 
 
-# ── 3. Core Detection Logic ───────────────────────────────────────────────────
+#  3. Core Detection Logic
 
 def _split_sentences(text: str) -> list[str]:
     """

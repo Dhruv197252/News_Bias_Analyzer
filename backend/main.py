@@ -18,7 +18,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-# Add project root to path (so 'utils' and 'training' are importable)
+# Add project root to path (so 'nlp' and 'ml' are importable)
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
@@ -74,7 +74,8 @@ async def add_process_time_header(request: Request, call_next):
 @app.on_event("startup")
 async def startup_event():
     logger.info(f"🚀 Starting {settings.APP_NAME} v{settings.APP_VERSION}")
-    logger.info(f"   DB URL  : {settings.DATABASE_URL[:40]}...")
+    db_preview = settings.DATABASE_URL if len(settings.DATABASE_URL) <= 40 else settings.DATABASE_URL[:40] + "..."
+    logger.info(f"   DB URL  : {db_preview}")
     logger.info(f"   CORS    : {settings.get_cors_origins()}")
     init_db()
     logger.info("✅ App ready. NLP engines will load on first analysis request.")

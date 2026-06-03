@@ -1,0 +1,105 @@
+/* ── GenAI Panel ─────────────────────────────────────── */
+.genai-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.genai-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.genai-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.gemini-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.18rem 0.5rem;
+  border-radius: var(--r-xs);
+  background: rgba(79,122,199,0.1);
+  color: var(--accent);
+  border: 1px solid rgba(79,122,199,0.2);
+  text-transform: uppercase;
+}
+
+.genai-header-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ── Tabs ────────────────────────────────────────────── */
+.genai-tabs {
+  display: flex;
+  gap: 3px;
+  background: var(--bg-surface);
+  border-radius: var(--r-md);
+  padding: 3px;
+  border: 1px solid var(--border);
+}
+
+.genai-tab {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--r-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s var(--ease);
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.01em;
+}
+
+.genai-tab.active {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Description ─────────────────────────────────────── */
+.genai-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  padding: 0.75rem 1rem;
+  background: var(--bg-surface);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-subtle);
+}
+
+/* ── Generate button ─────────────────────────────────── */
+.genai-generate-btn {
+  align-self: flex-start;
+}
+
+/* ── Result ──────────────────────────────────────────── */
+.genai-result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.genai-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.75;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 1.1rem 1.25rem;
+}

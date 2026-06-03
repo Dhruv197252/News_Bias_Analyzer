@@ -11,11 +11,9 @@ import logging
 import os
 from sqlalchemy import (
     create_engine, Column, String, Float, Integer,
-    Text, DateTime, text, event
+    Text, DateTime, JSON
 )
 from sqlalchemy.orm import DeclarativeBase, sessionmaker, Session
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
-from sqlalchemy import JSON
 import uuid
 from datetime import datetime, timezone
 

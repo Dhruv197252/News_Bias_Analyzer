@@ -15,13 +15,9 @@ from datetime import datetime, timezone
 
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
-# Existing engine imports (reuse everything from the original codebase)
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-
-from utils.ml_engine      import get_pipeline, predict_bias
-from utils.scorer         import analyze_article, load_engines
-from utils.scraper        import scrape_article, extract_domain
+from nlp.ml_engine      import get_pipeline, predict_bias
+from nlp.scorer         import analyze_article, load_engines
+from nlp.scraper        import scrape_article, extract_domain
 from backend.services.domain_service import get_domain_info_for
 
 logger = logging.getLogger(__name__)

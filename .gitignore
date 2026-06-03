@@ -1,4 +1,4 @@
-# Python
+# Python bytecode & cache
 __pycache__/
 *.py[cod]
 *.pyo
@@ -8,60 +8,79 @@ __pycache__/
 *.egg-info/
 dist/
 build/
-eggs/
-parts/
-var/
-sdist/
-develop-eggs/
-.installed.cfg
-lib/
-lib64/
-venv/
-ENV/
-env/
-bias_env/
 
-# Environment
+# Virtual environments (NEVER commit these)
+venv/
+env/
+ENV/
+bias_env/
+.venv/
+
+# Environment variables (contains secrets — NEVER commit)
 .env
 .env.local
 .env.production
+.env.staging
 
-# Models (too large for git — use git-lfs or download script)
+# ── ML Models (too large for git — use git-lfs or download script) ────────────
 models/*.pkl
 models/*.joblib
 models/*.bin
+models/*.h5
+models/*.pt
+models/*.onnx
 !models/.gitkeep
 
-# Data (large files)
-data/merged_corpus.csv
-data/*.pkl
+# ── Large Datasets (download via data_pipeline.py or DVC) ────────────────────
+data/raw/*.csv
+data/raw/*.parquet
+data/processed/*.csv
+data/processed/*.pkl
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+# Keep external domain JSONs (small — OK to commit)
+# data/external/*.json  ← intentionally NOT excluded
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+# ── Logs ─────────────────────────────────────────────────────────────────────
+logs/
+*.log
+!logs/.gitkeep
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Node
-node_modules/
+# ── Frontend build artifacts ──────────────────────────────────────────────────
+frontend/node_modules/
 frontend/dist/
 frontend/.env
 frontend/.env.local
 
-# SQLite dev DB
+# ── IDEs ─────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# ── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Testing ──────────────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# ── Jupyter ──────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ── SQLite (dev DB — use PostgreSQL in production) ───────────────────────────
 *.db
 *.sqlite
+*.sqlite3
 
-# Logs
-*.log
-logs/
-
-# Jupyter
-.ipynb_checkpoints/
-
-# pytest
-.pytest_cache/
+# ── Misc ─────────────────────────────────────────────────────────────────────
+*.bak
+*.tmp
+.cache/

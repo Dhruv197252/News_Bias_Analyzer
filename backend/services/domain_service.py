@@ -2,8 +2,8 @@
 Domain Service
 ---------------
 Looks up domain bias metadata from:
-  1. data/mbfc_domains.json  (MBFC ratings)
-  2. data/indian_domains.json  (Indian outlets)
+  1. ml/data/mbfc_domains.json  (MBFC ratings)
+  2. ml/data/indian_domains.json  (Indian outlets)
 Returns merged context dict for each domain.
 """
 
@@ -13,11 +13,10 @@ import os
 
 logger = logging.getLogger(__name__)
 
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-MBFC_PATH   = os.path.join(ROOT, "data", "mbfc_domains.json")
-INDIAN_PATH = os.path.join(ROOT, "data", "indian_domains.json")
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+MBFC_PATH   = os.path.join(ROOT, "data", "external", "mbfc_domains.json")
+INDIAN_PATH = os.path.join(ROOT, "data", "external", "indian_domains.json")
 
-# Inline fallback from mbfc_loader.py
 from training.mbfc_loader import MBFC_DOMAINS
 
 _MBFC_DATA:   dict | None = None

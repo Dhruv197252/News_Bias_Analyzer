@@ -1,0 +1,137 @@
+/* ── Result Page ─────────────────────────────────────── */
+.result-page { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.result-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.result-chips { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+
+.chip {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xs);
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0.01em;
+}
+.chip-dim { color: var(--text-muted); }
+
+/* ── Headline ────────────────────────────────────────── */
+.result-headline { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.result-headline-text {
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+}
+
+/* ── Main Layout ─────────────────────────────────────── */
+.result-main {
+  display: grid;
+  grid-template-columns: 290px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.result-left,
+.result-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── Gauge Card ──────────────────────────────────────── */
+.gauge-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Section Scores ──────────────────────────────────── */
+.section-score {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+.section-score:last-child { margin-bottom: 0; }
+.ss-label { font-size: 0.78rem; color: var(--text-secondary); width: 72px; flex-shrink: 0; }
+.ss-pct   { font-size: 0.78rem; font-weight: 600; width: 36px; text-align: right; flex-shrink: 0; }
+
+/* ── Domain ──────────────────────────────────────────── */
+.domain-grid { display: flex; flex-direction: column; gap: 0.6rem; }
+.domain-item { display: flex; justify-content: space-between; align-items: center; }
+.di-label { font-size: 0.775rem; color: var(--text-muted); }
+.di-val   { font-size: 0.82rem; font-weight: 600; color: var(--text-primary); }
+
+/* ── Word Chips ──────────────────────────────────────── */
+.word-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.word-chip {
+  background: rgba(201, 68, 68, 0.07);
+  border: 1px solid rgba(201, 68, 68, 0.18);
+  color: #c97070;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--r-xs);
+  font-size: 0.775rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* ── Opinion Card ────────────────────────────────────── */
+.opinion-card { padding: 1rem 1.25rem; }
+.opinion-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.opinion-value { font-size: 0.88rem; font-weight: 600; color: var(--text-primary); margin-top: 0.2rem; }
+.opinion-pct {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.opinion-pct span {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+}
+
+/* ── Body Preview ────────────────────────────────────── */
+.body-preview {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  max-height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+.body-preview::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 64px;
+  background: linear-gradient(transparent, var(--bg-card));
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 900px) {
+  .result-main { grid-template-columns: 1fr; }
+}

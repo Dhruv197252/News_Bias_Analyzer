@@ -87,7 +87,7 @@ export default function Result() {
           Back
         </button>
         <div className="result-chips">
-          {data.domain     && <span className="chip">{data.domain}</span>}
+          {/* {data.domain     && <span className="chip">{data.domain}</span>} */}
           {data.scrape_engine && <span className="chip chip-dim">via {data.scrape_engine}</span>}
           {data.word_count > 0 && <span className="chip chip-dim">{data.word_count.toLocaleString()} words</span>}
         </div>
@@ -115,7 +115,7 @@ export default function Result() {
             />
           </div>
 
-          {/* Domain */}
+          {/* Domain
           {domainInfo.leaning && (
             <div className="card">
               <div className="section-title" style={{ marginBottom: '1rem' }}>Source Profile</div>
@@ -138,7 +138,7 @@ export default function Result() {
                 )}
               </div>
             </div>
-          )}
+          )} */}
 
           {/* Article sections */}
           <div className="card">

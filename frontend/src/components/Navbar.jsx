@@ -20,7 +20,7 @@ export default function Navbar() {
         <ul className="navbar-links">
           <li><NavLink to="/" end>Analyze</NavLink></li>
           <li><NavLink to="/history">History</NavLink></li>
-          <li><NavLink to="/domains">Domains</NavLink></li>
+          <li><NavLink to="/engines">How it Works</NavLink></li>
           <li><NavLink to="/about">About</NavLink></li>
         </ul>
       </div>

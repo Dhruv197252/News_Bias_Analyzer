@@ -3,7 +3,7 @@ import Navbar  from './components/Navbar';
 import Home    from './pages/Home';
 import Result  from './pages/Result';
 import History from './pages/History';
-import Domains from './pages/Domains';
+import Engines from './pages/Engines';
 import About   from './pages/About';
 import './App.css';
 
@@ -17,7 +17,7 @@ export default function App() {
             <Route path="/"           element={<Home />}    />
             <Route path="/result/:id" element={<Result />}  />
             <Route path="/history"    element={<History />} />
-            <Route path="/domains"    element={<Domains />} />
+            <Route path="/engines"    element={<Engines />} />
             <Route path="/about"      element={<About />}   />
             <Route path="*"           element={<NotFound />} />
           </Routes>

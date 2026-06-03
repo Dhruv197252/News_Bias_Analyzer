@@ -67,14 +67,13 @@ def load_allsides() -> pd.DataFrame:
 
         # Try multiple known AllSides HuggingFace datasets
         candidates = [
-            ("valurank/allsides-bias", "train"),
-            ("newsmediabias/Plus-Media-Bias", "train"),
+            ("valurank/PoliticalBias_AllSides_Txt", "train"),
         ]
 
         for dataset_name, split in candidates:
             try:
                 logger.info(f"  Trying {dataset_name}...")
-                ds = load_dataset(dataset_name, split=split, trust_remote_code=True)
+                ds = load_dataset(dataset_name, split=split)
                 df = ds.to_pandas()
                 logger.info(f"  Loaded {len(df)} rows from {dataset_name}")
                 logger.info(f"  Columns: {list(df.columns)}")

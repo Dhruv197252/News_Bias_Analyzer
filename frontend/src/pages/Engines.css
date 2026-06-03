@@ -1,0 +1,121 @@
+.engines-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.engines-header {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.engines-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.engines-subtitle {
+  color: var(--accent);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.engines-desc {
+  max-width: 650px;
+  margin: 0 auto;
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.engines-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.5rem;
+}
+
+.engine-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.ec-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.75rem;
+}
+
+.ec-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.ec-weight {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--bg);
+  background: var(--accent);
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+}
+
+.ec-meaning {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.ec-example-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: auto;
+}
+
+.ec-example-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.ec-example-text {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+  border-left: 3px solid var(--accent);
+  line-height: 1.4;
+}
+
+.highlight-word {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.ec-explanation {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.ec-explanation strong {
+  color: var(--text-primary);
+}

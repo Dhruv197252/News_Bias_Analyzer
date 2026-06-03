@@ -1,14 +1,3 @@
-"""
-Analysis Service
------------------
-Orchestrates all NLP engines and produces the unified analysis result.
-
-Render free-tier RAM strategy:
-  • All heavy objects (ML pipeline, spaCy, VADER) loaded ONCE as singletons
-  • No transformer models loaded at startup
-  • spaCy uses 'en_core_web_sm' (~50 MB, not en_core_web_trf)
-"""
-
 import logging
 import uuid
 from datetime import datetime, timezone
@@ -22,8 +11,6 @@ from backend.services.domain_service import get_domain_info_for
 
 logger = logging.getLogger(__name__)
 
-# ── Singletons (loaded once at first use) ─────────────────────────────────────
-
 _pipeline = None
 _sia      = None
 _nlp      = None
@@ -35,19 +22,15 @@ def _get_engines():
     if _pipeline is None:
         logger.info("Loading ML engines (first request)...")
         _pipeline, _sia, _nlp = load_engines()
-        # Ensure we use the best available model
+       
         _pipeline = get_pipeline()
-        logger.info("✅ All engines ready.")
+        logger.info(" All engines ready !!!!!!!!!!")
     return _pipeline, _sia, _nlp
 
 
-# ── Core Analysis ─────────────────────────────────────────────────────────────
+# Core Analysis 
 
 def analyze_text(text: str, headline: str = "") -> dict:
-    """
-    Full analysis of plain text.
-    Returns unified result dict ready for API response.
-    """
     pipeline, sia, nlp = _get_engines()
 
     # If headline not provided, use first sentence as headline
@@ -82,10 +65,6 @@ def analyze_text(text: str, headline: str = "") -> dict:
 
 
 def analyze_url(url: str) -> dict:
-    """
-    Scrape URL and run full analysis.
-    Uses multi-engine scraper (trafilatura → newspaper3k → bs4).
-    """
     pipeline, sia, nlp = _get_engines()
 
     # Scrape
@@ -123,7 +102,7 @@ def analyze_url(url: str) -> dict:
     )
 
 
-# ── Response Builder ──────────────────────────────────────────────────────────
+# Response Builder 
 
 def _build_response(
     analysis_result: dict,

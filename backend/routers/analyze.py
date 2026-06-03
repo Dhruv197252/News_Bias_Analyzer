@@ -1,7 +1,3 @@
-"""
-Analyze Router — POST /api/analyze/text and POST /api/analyze/url
-"""
-
 import logging
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session

@@ -1,14 +1,3 @@
-"""
-SLANT v2.0 — FastAPI Main App
--------------------------------
-Entry point for the backend.
-Render deployment: uvicorn backend.main:app --host 0.0.0.0 --port $PORT --workers 1
-
-RAM budget (Render free tier = 512 MB):
-  All NLP engines loaded lazily on first request (~250 MB total).
-  Use --workers 1 to avoid duplicate model copies in RAM.
-"""
-
 import logging
 import os
 import sys
@@ -18,7 +7,6 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-# Add project root to path (so 'nlp' and 'ml' are importable)
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
@@ -36,7 +24,7 @@ logger   = logging.getLogger(__name__)
 settings = get_settings()
 
 
-# ── App ───────────────────────────────────────────────────────────────────────
+# App
 
 app = FastAPI(
     title       = settings.APP_NAME,
@@ -47,7 +35,7 @@ app = FastAPI(
 )
 
 
-# ── CORS ──────────────────────────────────────────────────────────────────────
+# CORS
 
 app.add_middleware(
     CORSMiddleware,
@@ -58,7 +46,7 @@ app.add_middleware(
 )
 
 
-# ── Request Timing Middleware ─────────────────────────────────────────────────
+# Request Timing Middleware
 
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
@@ -69,19 +57,19 @@ async def add_process_time_header(request: Request, call_next):
     return response
 
 
-# ── Startup ───────────────────────────────────────────────────────────────────
+# Startup
 
 @app.on_event("startup")
 async def startup_event():
-    logger.info(f"🚀 Starting {settings.APP_NAME} v{settings.APP_VERSION}")
+    logger.info(f" Starting..... {settings.APP_NAME} v{settings.APP_VERSION}")
     db_preview = settings.DATABASE_URL if len(settings.DATABASE_URL) <= 40 else settings.DATABASE_URL[:40] + "..."
     logger.info(f"   DB URL  : {db_preview}")
     logger.info(f"   CORS    : {settings.get_cors_origins()}")
     init_db()
-    logger.info("✅ App ready. NLP engines will load on first analysis request.")
+    logger.info(" App ready!!! NLP engines will load on first analysis request.")
 
 
-# ── Routers ───────────────────────────────────────────────────────────────────
+# Routers 
 
 app.include_router(analyze.router)
 app.include_router(history.router)
@@ -89,7 +77,7 @@ app.include_router(history.router)
 # app.include_router(genai.router)
 
 
-# ── Health ────────────────────────────────────────────────────────────────────
+# Health
 
 @app.get("/api/health", tags=["health"])
 def health_check():
@@ -121,7 +109,7 @@ def root():
     }
 
 
-# ── Dev Server ────────────────────────────────────────────────────────────────
+# Dev Server 
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,8 +1,6 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  // Vite 8 has native JSX support via rolldown without any plugin needed.
-  // Just tell it which JSX runtime to use.
   jsx: {
     mode: 'automatic',
     importSource: 'react',

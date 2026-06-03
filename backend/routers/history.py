@@ -1,7 +1,3 @@
-"""
-History Router — GET /api/history and GET /api/history/{id}
-"""
-
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import desc

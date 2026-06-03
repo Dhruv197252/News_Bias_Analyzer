@@ -1,12 +1,3 @@
-"""
-Database — PostgreSQL via psycopg2 + SQLAlchemy sync
-------------------------------------------------------
-Render free tier safe:
-  • Synchronous (no async complexity)
-  • Connection pool sized for 512 MB RAM
-  • Auto-creates tables on startup (no Alembic migrations needed)
-"""
-
 import logging
 import os
 from sqlalchemy import (
@@ -23,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
-# ── Engine ────────────────────────────────────────────────────────────────────
+# Engine
 
 def _make_engine():
     db_url = settings.DATABASE_URL
@@ -32,7 +23,7 @@ def _make_engine():
     if db_url.startswith("postgresql"):
         return create_engine(
             db_url,
-            pool_size       = 3,      # Keep low for 512 MB RAM limit
+            pool_size       = 3,      # Keeping low for 512 MB RAM limit
             max_overflow    = 2,
             pool_timeout    = 30,
             pool_recycle    = 1800,   # Recycle connections every 30 min
@@ -52,7 +43,7 @@ engine = _make_engine()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-# ── ORM Models ────────────────────────────────────────────────────────────────
+# ORM Models
 
 class Base(DeclarativeBase):
     pass
@@ -74,7 +65,7 @@ class Analysis(Base):
     verdict          = Column(String(100), nullable=True)
     ml_probability   = Column(Float,   nullable=True)
     ml_label         = Column(Integer, nullable=True)   # 0 = Neutral, 1 = Biased
-    engine_scores    = Column(JSON,    nullable=True)   # All engine scores as JSON
+    engine_scores    = Column(JSON,    nullable=True)   
     genai_explanation = Column(Text,   nullable=True)
     genai_rewrite    = Column(Text,    nullable=True)
     genai_summary    = Column(Text,    nullable=True)
@@ -94,15 +85,15 @@ class DomainStat(Base):
     last_updated         = Column(DateTime, nullable=True)
 
 
-# ── Init ──────────────────────────────────────────────────────────────────────
+# Init
 
 def init_db():
     """Create all tables if they don't exist. Called at app startup."""
     try:
         Base.metadata.create_all(bind=engine)
-        logger.info("✅ Database tables initialized.")
+        logger.info(" Database tables initialized!!!!!!!")
     except Exception as e:
-        logger.error(f"❌ Database init failed: {e}")
+        logger.error(f" Database init failed.....: {e}")
         raise
 
 

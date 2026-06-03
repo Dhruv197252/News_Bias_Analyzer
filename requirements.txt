@@ -25,8 +25,7 @@ beautifulsoup4>=4.12.0          # Tertiary fallback
 requests>=2.31.0
 lxml>=5.0.0                     # Fast HTML parser (used by trafilatura + bs4)
 
-# ── Gemini AI ─────────────────────────────────────────────────────────────────
-google-generativeai>=0.5.0
+
 
 # ── Optional: XGBoost (better accuracy than LR) ───────────────────────────────
 xgboost>=2.0.0

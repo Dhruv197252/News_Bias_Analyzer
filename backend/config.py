@@ -1,10 +1,3 @@
-"""
-Config — Environment Variables
---------------------------------
-All config loaded from environment. Falls back to defaults for local dev.
-Set these on Render dashboard (never commit secrets to git).
-"""
-
 import os
 from functools import lru_cache
 from pydantic_settings import BaseSettings

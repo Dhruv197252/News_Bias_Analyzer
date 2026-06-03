@@ -1,7 +1,3 @@
-"""
-Domains Router — GET /api/domains
-"""
-
 from fastapi import APIRouter
 from backend.services.domain_service import list_all_domains
 
